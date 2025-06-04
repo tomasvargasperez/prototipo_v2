@@ -1,0 +1,44 @@
+prueba con comando curl
+
+--------------------------------------------------------------
+crear un usuario:
+----------------
+curl -X POST http://localhost:3000/user -H "Content-Type: application/json" -d "{\"name\":\"ana\",\"lastname\":\"aedo\",\"email\":\"ana@example.com\",\"password\":\"24680\",\"id\":150}"
+              
+RESPUESTA:
+{"id":110,"name":"Tomas","lastname":"Pérez","email":"carlos@google.com","password":"$2b$10$KhitdCQqkAkzDmtybPFmgOCGO9FDfWW1ktry8XFSBZ0z3M9N/IAjm","_id":"68002a45d84734a34d1f0d7a","__v":0}
+
+--------------------------------------------------------------
+Login de usuario:
+----------------
+curl -X POST http://localhost:3000/login -H "Content-Type: application/json" -d "{\"email\":\"tomas@google.com\",\"password\":\"12345\"}
+
+RESPUESTA:
+{"status":"success","token":"mi_token_valido"}
+
+--------------------------------------------------------------
+Modificar usuario:
+-----------------
+curl -X PATCH http://localhost:3000/user/68002ccfd84734a34d1f0d7d ^
+-H "Content-Type: application/json" ^
+-H "Authorization: Bearer mi_token_valido" ^
+-d "{\"name\":\"Ana Updated\",\"lastname\":\"Gomez\"}"
+
+--------------------------------------------------------------
+Eliminar usuario:
+----------------
+curl -X DELETE http://localhost:3000/user/68002ccfd84734a34d1f0d7d \ -H "Authorization: Bearer mi_token_valido"
+
+RESPUESTA:
+{"status":"success","message":"Usuario eliminado correctamente"}curl: (3) URL rejected: Bad hostname
+
+--------------------------------------------------------------
+Obtener todos los usuarios:
+--------------------------
+curl -X GET http://localhost:3000/user -H "Authorization: Bearer TU_TOKEN_JWT"
+curl -X GET http://localhost:3000/user -H "Authorization: Bearer mi_token_valido"
+
+
+RESPUESTA:
+[{"_id":"68002a45d84734a34d1f0d7a","id":110,"name":"Tomas","lastname":"Pérez","email":"carlos@google.com","password":"$2b$10$KhitdCQqkAkzDmtybPFmgOCGO9FDfWW1ktry8XFSBZ0z3M9N/IAjm","__v":0},
+{"_id":"68002ccfd84734a34d1f0d7d","id":120,"name":"Ana Updated","lastname":"Gomez","email":"tomas@google.com","password":"$2b$10$cra2NlIOPpamN2GxbdNpqOjDIilVvgyP0am.c7hlgWjcRQb2qjfHK","__v":0}]

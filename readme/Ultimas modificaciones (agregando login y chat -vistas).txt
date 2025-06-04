@@ -1,0 +1,36 @@
+Cambios clave por sección:
+Configuración inicial (líneas 1-16):
+
+Todas las importaciones necesarias
+
+Inicialización de Express y Socket.io
+
+Base de datos (líneas 19-25):
+
+Conexión a MongoDB con manejo de errores
+
+Middlewares (líneas 28-34):
+
+Parseo de JSON y formularios
+
+Configuración para servir archivos estáticos
+
+Socket.io (líneas 37-81):
+
+Manejo de conexiones/desconexiones
+
+Lógica de canales y mensajes
+
+Persistencia en MongoDB
+
+Rutas (líneas 84-93):
+
+API bajo /api
+
+Vistas para login y chat
+
+Inicio del servidor (líneas 96-101):
+
+Puerto configurable por entorno
+
+Mensaje de confirmación

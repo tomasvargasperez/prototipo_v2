@@ -1,0 +1,74 @@
+Estructura de la aplicación
+La aplicación tiene una estructura MVC (Modelo-Vista-Controlador) simplificada:
+
+Modelos: Define la estructura de datos del usuario en User.js
+Controladores: Lógica de negocio en UserController.js
+Rutas: Definición de endpoints en UserRoutes.js
+Punto de entrada: Configuración del servidor en app.js
+
+Funcionalidades principales
+
+Conexión a la base de datos
+
+En app.js se establece la conexión con MongoDB usando Mongoose
+Se utiliza la URL de la base de datos desde las variables de entorno o una URL local por defecto
+
+
+Sistema de autenticación
+
+Los usuarios pueden registrarse mediante la ruta POST /user
+Las contraseñas se cifran con bcrypt antes de almacenarse
+Para el login, se utiliza la ruta POST /login que verifica credenciales y genera un token JWT
+
+
+Operaciones CRUD para usuarios
+
+Create: POST /user para crear un nuevo usuario
+Read: GET /user para obtener todos los usuarios, GET /user/:id para un usuario específico
+Update: PATCH /user/:id para actualizar información de un usuario
+Delete: DELETE /user/:id para eliminar un usuario
+
+
+Protección de rutas
+
+La ruta GET /user está protegida con el middleware validateToken
+Solo usuarios autenticados con token válido pueden acceder
+
+
+
+Flujo de operaciones
+1. Registro de usuario
+
+El cliente envía datos del usuario (nombre, apellido, email, ID y contraseña) a POST /user
+La contraseña se cifra usando bcrypt
+Se crea un nuevo documento en la colección de usuarios
+Se manejan errores como duplicación de correo electrónico
+
+2. Inicio de sesión
+
+El cliente envía email y contraseña a POST /login
+El controlador verifica si el usuario existe
+Se compara la contraseña con el hash almacenado
+Si las credenciales son correctas, se genera un token JWT
+El token se devuelve al cliente para su uso en futuras peticiones
+
+3. Consulta de usuarios (protegida)
+
+El cliente envía una petición a GET /user con el token en el header de autorización
+El middleware validateToken verifica y decodifica el token
+Si es válido, permite acceder a la lista de usuarios
+Se devuelven todos los usuarios de la base de datos
+
+4. Operaciones sobre usuarios específicos
+
+Se pueden obtener, actualizar o eliminar usuarios por su ID
+Cada operación tiene su propia ruta y método HTTP
+
+Seguridad implementada
+
+Cifrado de contraseñas con bcrypt
+Autenticación con tokens JWT
+Validación de datos en el modelo (email, nombre)
+Protección de rutas sensibles con middleware
+
+Esta aplicación sirve como un backend para un sistema de gestión de usuarios, proporcionando una API que podría ser consumida por un frontend o por otras aplicaciones.
