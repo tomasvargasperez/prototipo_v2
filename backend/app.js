@@ -12,6 +12,7 @@ const suggestionRoutes = require('./routes/SuggestionRoutes');
 const announcementRoutes = require('./routes/AnnouncementRoutes');
 const channelRoutes = require('./routes/ChannelRoutes');
 const dashboardRoutes = require('./routes/DashboardRoutes');
+const phoneBookRoutes = require('./routes/phoneBookRoutes');
 const Message = require('./models/Message');
 const User = require('./models/User');
 const socket = require('./socket');
@@ -139,6 +140,7 @@ app.use('/api/suggestions', suggestionRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/channels', channelRoutes);
 app.use('/api/admin', dashboardRoutes);
+app.use('/api/phonebook', phoneBookRoutes);
 
 // Rutas de autenticación (deben ir después de las rutas API)
 app.use('/', userRoutes);
