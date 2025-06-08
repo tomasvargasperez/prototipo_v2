@@ -55,6 +55,9 @@
         <div v-if="!showSuggestionBox && !showAnnouncementsBox">
           <div class="chat-header">
             <h2># {{ getCurrentChannelName() }}</h2>
+            <p class="channel-header-description" v-if="getCurrentChannelDescription()">
+              {{ getCurrentChannelDescription() }}
+            </p>
           </div>
           
           <div class="messages" ref="messagesContainer">
@@ -269,6 +272,11 @@ export default {
     getCurrentChannelName() {
       const channel = this.channels.find(c => c._id === this.selectedChannel)
       return channel ? channel.name : this.selectedChannel
+    },
+
+    getCurrentChannelDescription() {
+      const channel = this.channels.find(c => c._id === this.selectedChannel)
+      return channel ? channel.description : ''
     },
 
     getUserInitials() {
@@ -527,11 +535,11 @@ export default {
 }
 
 .channel:hover {
-  background-color: rgba(255, 255, 255, 0.1); /* Original */
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .channel.active {
-  background-color: rgba(255, 255, 255, 0.2); /* Original */
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .channel i {
@@ -585,6 +593,7 @@ export default {
   background-color: rgba(255, 255, 255, 0.98);
   overflow: hidden;
   position: relative;
+  height: 100%;
 }
 
 .chat-main::before {
@@ -615,27 +624,38 @@ export default {
 }
 
 .chat-header {
-  padding: 15px 20px;
-  border-bottom: 1px solid #e1e4e8;
-  display: flex;
-  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid rgba(44, 62, 80, 0.1);
+  background-color: #f0f4f8;  /* Color azulino suave */
+  text-align: left;
 }
 
 .chat-header h2 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #2c3e50; /* Azul oscuro original */
   margin: 0;
+  font-size: 1.5em;
+  color: #2c3e50;  /* Azul oscuro que ya se usa en la app */
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.channel-header-description {
+  margin: 5px 0 0 0;
+  color: #34495e;  /* Un tono más oscuro que el original para mejor contraste */
+  font-size: 0.9em;
+  text-align: left;
+  padding-left: 2px;
 }
 
 .messages {
   flex: 1;
-  padding: 20px;
   overflow-y: auto;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  height: calc(100vh - 140px); /* Ajustar altura considerando header y input */
+  gap: 10px;
+  max-height: calc(100vh - 180px); /* Ajuste para considerar el header y el input */
 }
 
 .message {
@@ -700,45 +720,35 @@ export default {
 
 .message-input {
   padding: 15px 20px;
+  background-color: white;
   border-top: 1px solid #e1e4e8;
   display: flex;
-  align-items: center;
-  background-color: white; /* Asegurar que el fondo sea blanco */
-  position: relative; /* Asegurar que esté sobre los mensajes */
-  z-index: 1; /* Mantener el input sobre los mensajes */
+  gap: 10px;
+  position: sticky;
+  bottom: 0;
+  width: 100%;
 }
 
 .message-input input {
   flex: 1;
-  padding: 12px 15px;
-  border: 1px solid #dddfe2; /* Gris original */
-  border-radius: 30px;
-  font-size: 15px;
-  outline: none;
-  transition: border-color 0.2s;
+  padding: 8px 12px;
+  border: 1px solid #e1e4e8;
+  border-radius: 4px;
+  font-size: 14px;
 }
 
-.message-input input:focus {
-  border-color: #3498db; /* Azul principal original */
-}
-
-.send-button {
-  background-color: #3498db; /* Azul principal original */
+.message-input button {
+  padding: 8px 16px;
+  background-color: #2c3e50;
   color: white;
   border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  margin-left: 10px;
+  border-radius: 4px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   transition: background-color 0.2s;
 }
 
-.send-button:hover {
-  background-color: #2980b9; /* Azul oscuro original */
+.message-input button:hover {
+  background-color: #34495e;
 }
 
 .mt-4 {
