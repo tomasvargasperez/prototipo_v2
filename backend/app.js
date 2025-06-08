@@ -13,7 +13,8 @@ const announcementRoutes = require('./routes/AnnouncementRoutes');
 const channelRoutes = require('./routes/ChannelRoutes');
 const dashboardRoutes = require('./routes/DashboardRoutes');
 const Message = require('./models/Message');
-const User = require('./models/User')
+const User = require('./models/User');
+const socket = require('./socket');
 
 // Cargar variables de entorno
 dotenv.config();
@@ -22,13 +23,8 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// Configurar Socket.IO con CORS para Vue
-const io = socketIo(server, {
-    cors: {
-        origin: ['http://localhost:5173', 'http://localhost:5174'], // Para desarrollo Vue
-        methods: ['GET', 'POST']
-    }
-});
+// Inicializar Socket.IO
+const io = socket.init(server);
 
 // Conexión a MongoDB
 const DB_URL = process.env.DB_URL || 'mongodb://localhost:27017/chat_bbdd'; 

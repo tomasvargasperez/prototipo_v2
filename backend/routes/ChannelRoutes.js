@@ -3,6 +3,7 @@ const router = express.Router();
 const Channel = require('../models/Channel');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const socket = require('../socket');
 
 // Middleware de autenticación
 const authenticateToken = async (req, res, next) => {
@@ -100,6 +101,9 @@ router.post('/', authenticateToken, isAdmin, async (req, res) => {
             { path: 'allowedUsers', select: 'name email' }
         ]);
 
+        // Emitir evento de actualización del dashboard
+        socket.getIO().emit('dashboard_update');
+
         res.status(201).json(populatedChannel);
     } catch (error) {
         console.error('Error al crear canal:', error);
@@ -147,6 +151,9 @@ router.delete('/:id', authenticateToken, isAdmin, async (req, res) => {
         if (!channel) {
             return res.status(404).json({ message: 'Canal no encontrado' });
         }
+
+        // Emitir evento de actualización del dashboard
+        socket.getIO().emit('dashboard_update');
 
         res.json({ message: 'Canal eliminado correctamente' });
     } catch (error) {

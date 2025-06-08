@@ -533,11 +533,13 @@
 
 <script>
 import Chart from 'chart.js/auto';
+import io from 'socket.io-client';
 
 export default {
   name: 'AdminApp',
   data() {
     return {
+      socket: null,
       activeSection: 'dashboard',
       users: [],
       channels: [],
@@ -593,13 +595,6 @@ export default {
         switch (section) {
           case 'dashboard':
             await this.fetchDashboardData();
-            // Dar tiempo al DOM para actualizarse antes de inicializar los gráficos
-            await this.$nextTick();
-            setTimeout(() => {
-              if (this.activeSection === 'dashboard') {
-                this.initializeCharts(this.dashboardData);
-              }
-            }, 100);
             break;
           case 'usuarios':
             await this.fetchUsers();
@@ -1002,8 +997,7 @@ export default {
 
         console.log('✅ Datos recibidos correctamente');
         const data = await response.json();
-        console.log('📊 Datos del dashboard:', data);
-
+        
         // Guardar los datos en una propiedad del componente
         this.dashboardData = data;
         
@@ -1013,19 +1007,44 @@ export default {
         this.totalMessages = data.totalMessages || 0;
         this.activeConnections = data.activeConnections || 0;
         this.topUsers = data.topUsers || [];
+
+        // Esperar a que Vue actualice el DOM
+        await this.$nextTick();
+        
+        // Esperar un poco más para asegurar que los canvas estén disponibles
+        setTimeout(() => {
+          if (this.activeSection === 'dashboard') {
+            this.initializeCharts(data);
+          }
+        }, 100);
       } catch (error) {
         console.error('❌ Error al cargar datos del dashboard:', error);
         alert('Error al cargar los datos del dashboard. Por favor, intente nuevamente.');
       }
     },
+    destroyCharts() {
+      console.log('Destruyendo gráficos...');
+      if (this.channelActivityChart) {
+        this.channelActivityChart.destroy();
+        this.channelActivityChart = null;
+      }
+      if (this.userActivityChart) {
+        this.userActivityChart.destroy();
+        this.userActivityChart = null;
+      }
+      if (this.connectionsChart) {
+        this.connectionsChart.destroy();
+        this.connectionsChart = null;
+      }
+    },
     initializeCharts(data) {
+      console.log('🎨 Iniciando inicialización de gráficos...');
+      
       // Asegurarse de que estamos en la sección dashboard
       if (this.activeSection !== 'dashboard') {
+        console.log('❌ No estamos en la sección dashboard, cancelando inicialización de gráficos');
         return;
       }
-
-      // Limpiar gráficos existentes
-      this.destroyCharts();
 
       // Configuración común
       const chartOptions = {
@@ -1045,11 +1064,11 @@ export default {
         }
       };
 
-      // Esperar a que el DOM se actualice
-      this.$nextTick(() => {
+      try {
         // Gráfico de Actividad por Canal
         const channelCtx = this.$refs.channelActivityChart?.getContext('2d');
         if (channelCtx) {
+          console.log('📊 Creando gráfico de actividad por canal...');
           this.channelActivityChart = new Chart(channelCtx, {
             type: 'bar',
             data: {
@@ -1078,6 +1097,7 @@ export default {
         // Gráfico de Usuarios Activos
         const userCtx = this.$refs.userActivityChart?.getContext('2d');
         if (userCtx) {
+          console.log('📊 Creando gráfico de usuarios activos...');
           this.userActivityChart = new Chart(userCtx, {
             type: 'line',
             data: {
@@ -1098,6 +1118,7 @@ export default {
         // Gráfico de Conexiones
         const connectionsCtx = this.$refs.connectionsChart?.getContext('2d');
         if (connectionsCtx) {
+          console.log('📊 Creando gráfico de conexiones...');
           this.connectionsChart = new Chart(connectionsCtx, {
             type: 'line',
             data: {
@@ -1133,16 +1154,11 @@ export default {
             }
           });
         }
-      });
-    },
-    destroyCharts() {
-      console.log('Destruyendo gráficos...');
-      ['channelActivityChart', 'userActivityChart', 'connectionsChart'].forEach(chartName => {
-        if (this[chartName]) {
-          this[chartName].destroy();
-          this[chartName] = null;
-        }
-      });
+        
+        console.log('✅ Inicialización de gráficos completada');
+      } catch (error) {
+        console.error('❌ Error al inicializar los gráficos:', error);
+      }
     },
     async fetchSuggestions() {
       try {
@@ -1205,6 +1221,17 @@ export default {
         alert('Error al actualizar el estado de la sugerencia');
       }
     },
+    initializeSocket() {
+      this.socket = io('http://localhost:3000');
+      
+      // Escuchar eventos de actualización del dashboard
+      this.socket.on('dashboard_update', () => {
+        console.log('🔄 Recibido evento de actualización del dashboard');
+        if (this.activeSection === 'dashboard') {
+          this.fetchDashboardData();
+        }
+      });
+    },
   },
   watch: {
     activeSection: {
@@ -1246,6 +1273,9 @@ export default {
 
     console.log('👤 Usuario autenticado como admin');
     
+    // Inicializar socket
+    this.initializeSocket();
+    
     // Si estamos en la sección dashboard, cargar los datos
     if (this.activeSection === 'dashboard') {
       console.log('📊 Cargando datos del dashboard...');
@@ -1257,6 +1287,10 @@ export default {
     this.activeSection = 'dashboard';
   },
   beforeDestroy() {
+    // Desconectar socket y destruir gráficos
+    if (this.socket) {
+      this.socket.disconnect();
+    }
     this.destroyCharts();
   }
 }
