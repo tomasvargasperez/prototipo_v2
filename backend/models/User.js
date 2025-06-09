@@ -46,13 +46,23 @@ const UserSchema = new mongoose.Schema({
 
 // Método para encriptar contraseña antes de guardar
 UserSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
+  if (!this.isModified('password')) {
+    console.log('📝 Password no modificado, saltando hasheo');
+    return next();
+  }
   
   try {
+    console.log('🔐 Iniciando hasheo de password...');
+    console.log('Password original (length):', this.password.length);
+    
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
+    
+    console.log('✅ Password hasheado exitosamente');
+    console.log('Password hasheado (length):', this.password.length);
     next();
   } catch (error) {
+    console.error('❌ Error al hashear password:', error);
     next(error);
   }
 });

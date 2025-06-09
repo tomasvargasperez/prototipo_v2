@@ -54,15 +54,6 @@
               <i class="fas fa-lightbulb"></i> Sugerencias Anónimas
             </span>
           </div>
-          <div 
-            class="channel" 
-            :class="{ active: activeSection === 'directorio' }"
-            @click="setActiveSection('directorio')"
-          >
-            <span class="channel-name">
-              <i class="fas fa-phone-alt"></i> Directorio Telefónico
-            </span>
-          </div>
         </div>
         
         <div class="logout-wrapper">
@@ -308,64 +299,6 @@
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <!-- Nueva sección para Directorio Telefónico -->
-          <div v-if="activeSection === 'directorio'" class="directory-section">
-            <div class="section-header">
-              <h3>Directorio Telefónico</h3>
-              <button class="refresh-btn" @click="refreshDirectory">
-                <i class="fas fa-sync-alt"></i> Actualizar
-              </button>
-            </div>
-
-            <div class="last-update-info" v-if="lastDirectoryUpdate">
-              Última actualización: {{ lastDirectoryUpdate }}
-            </div>
-
-            <div class="directory-search">
-              <div class="search-input">
-                <input 
-                  type="text" 
-                  v-model="directorySearch" 
-                  placeholder="Buscar por nombre o anexo..."
-                  @input="searchDirectory"
-                >
-                <i class="fas fa-search"></i>
-              </div>
-            </div>
-
-            <div class="table-container">
-              <table class="directory-table">
-                <thead>
-                  <tr>
-                    <th>Número</th>
-                    <th>Nombre</th>
-                    <th>Anexo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-if="!directoryContacts.length">
-                    <td colspan="3" class="text-center">
-                      <div class="loading-message">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        Cargando directorio...
-                      </div>
-                    </td>
-                  </tr>
-                  <tr v-else-if="!filteredDirectory.length">
-                    <td colspan="3" class="text-center">
-                      No se encontraron resultados
-                    </td>
-                  </tr>
-                  <tr v-for="contact in filteredDirectory" :key="contact.id">
-                    <td>{{ contact.number }}</td>
-                    <td>{{ contact.name }}</td>
-                    <td>{{ contact.extension }}</td>
-                  </tr>
-                </tbody>
-              </table>
             </div>
           </div>
 
@@ -647,10 +580,6 @@ export default {
       suggestionFilter: 'all',
       filteredSuggestions: [],
       dashboardData: null,
-      directorySearch: '',
-      directoryContacts: [],
-      lastDirectoryUpdate: null,
-      filteredDirectory: [],
     }
   },
   methods: {
@@ -679,9 +608,6 @@ export default {
           case 'sugerencias':
             await this.fetchSuggestions();
             break;
-          case 'directorio':
-            await this.refreshDirectory();
-            break;
         }
       } catch (error) {
         console.error('Error al cargar datos de la sección:', error);
@@ -693,8 +619,7 @@ export default {
         usuarios: 'Gestión de Usuarios',
         configuracion: 'Configuración',
         anuncios: 'Foro de Anuncios',
-        sugerencias: 'Sugerencias Anónimas',
-        directorio: 'Directorio Telefónico'
+        sugerencias: 'Sugerencias Anónimas'
       }
       return titles[this.activeSection] || 'Panel de Administración'
     },
@@ -1306,42 +1231,6 @@ export default {
           this.fetchDashboardData();
         }
       });
-    },
-    async refreshDirectory() {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:3000/api/phonebook', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          // Formatear los datos para la tabla
-          this.directoryContacts = data.entries.map((entry, index) => ({
-            id: index + 1,
-            number: index + 1,
-            name: entry.name,
-            extension: entry.extension
-          }));
-          this.filteredDirectory = [...this.directoryContacts];
-          this.lastDirectoryUpdate = new Date().toLocaleString();
-        } else {
-          console.error('Error al obtener el directorio');
-          alert('Error al obtener el directorio telefónico');
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        alert('Error al conectar con el servidor');
-      }
-    },
-    searchDirectory() {
-      const searchTerm = this.directorySearch.toLowerCase();
-      this.filteredDirectory = this.directoryContacts.filter(contact => 
-        contact.name.toLowerCase().includes(searchTerm) ||
-        contact.extension.toString().includes(searchTerm)
-      );
     },
   },
   watch: {
@@ -2274,106 +2163,5 @@ export default {
   text-align: center;
   color: #666;
   padding: 20px;
-}
-
-/* Estilos para el Directorio Telefónico */
-.directory-section {
-  padding: 20px;
-}
-
-.last-update-info {
-  background-color: #fff3cd;
-  color: #856404;
-  padding: 10px 15px;
-  border-radius: 4px;
-  margin: 10px 0;
-  font-size: 0.9em;
-}
-
-.directory-search {
-  margin: 20px 0;
-}
-
-.search-input {
-  position: relative;
-  max-width: 400px;
-}
-
-.search-input input {
-  width: 100%;
-  padding: 10px 35px 10px 15px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.search-input i {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #666;
-}
-
-.directory-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.directory-table th,
-.directory-table td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid #eee;
-}
-
-.directory-table th {
-  background-color: #f8f9fa;
-  font-weight: 600;
-  color: #495057;
-}
-
-.directory-table tr:hover {
-  background-color: #f8f9fa;
-}
-
-.refresh-btn {
-  background-color: #4a235a;
-  color: white;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: background-color 0.2s;
-}
-
-.refresh-btn:hover {
-  background-color: #6b3483;
-}
-
-.refresh-btn i {
-  font-size: 14px;
-}
-
-.loading-message {
-  padding: 20px;
-  text-align: center;
-  color: #666;
-}
-
-.loading-message i {
-  margin-right: 10px;
-  color: #4a235a;
-}
-
-.text-center {
-  text-align: center;
 }
 </style> 

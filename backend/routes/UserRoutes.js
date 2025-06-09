@@ -96,31 +96,28 @@ router.get('/user/email/:email', async (req, res) => {
 
 //Crear un nuevo usuario
 router.post('/user', async (req, res) => { 
-    //Crear un usuario
-    //Esta ruta crea un nuevo usuario en la base de datos. 
-    //Primero se cifra la contraseña usando bcrypt. 
-    const hashedPassword = await bcrypt.hash(req.body.password, 10); 
-    //Se crea un nuevo objeto usuario utilizando los datos recibidos en la solicitud. 
-    let user = UserSchema({
-        name: req.body.name, 
-        lastname: req.body.lastname, 
-        email: req.body.email, 
-        id: req.body.id, 
-        password: hashedPassword 
-    }); 
-    // Se guarda el usuario en la base de datos. 
-    user.save().then((result) => { 
+    try {
+        //Crear un usuario sin hashear la contraseña, el middleware pre-save se encargará
+        let user = UserSchema({
+            name: req.body.name, 
+            lastname: req.body.lastname, 
+            email: req.body.email, 
+            id: req.body.id, 
+            password: req.body.password 
+        }); 
+        
+        // Se guarda el usuario en la base de datos. 
+        const result = await user.save();
         res.send(result);
-     }).catch((err) => { 
-    // Se manejan los errores que pueden ocurrir al guardar el usuario. 
-            // Si el correo electrónico ya está registrado, se envía un mensaje de error. 
+    } catch (err) { 
+        // Se manejan los errores que pueden ocurrir al guardar el usuario. 
         if(err.code == 11000){ 
             res.send({"status" : "error", "message" :"El correo ya fue registrado"}); 
         } else { 
             // Si ocurre algún otro error, se envía un mensaje de error genérico. 
             res.send({"status" : "error", "message" :err.message}); 
         } 
-    }); 
+    }
 });
 
 //Actualizar un usuario.
@@ -166,19 +163,36 @@ router.delete('/user/:id', (req, res) => {
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
-        const user = await UserSchema.findOne({ email });
+        console.log('🔍 Intento de login - Email:', email);
 
+        const user = await UserSchema.findOne({ email });
         if (!user) {
+            console.log('❌ Login fallido - Usuario no encontrado:', email);
             return res.status(401).json({ message: 'Credenciales incorrectas' });
         }
 
+        console.log('✅ Usuario encontrado:', {
+            id: user._id,
+            email: user.email,
+            active: user.active,
+            passwordLength: user.password.length
+        });
+
         // Verificar si el usuario está activo
         if (!user.active) {
+            console.log('❌ Login fallido - Usuario inactivo:', email);
             return res.status(403).json({ message: 'Usuario inactivo. Contacte al administrador.' });
         }
 
+        console.log('🔐 Comparando contraseñas...');
+        console.log('Password proporcionada (length):', password.length);
+        console.log('Password hash almacenado (length):', user.password.length);
+
         const validPassword = await bcrypt.compare(password, user.password);
+        console.log('🔑 Resultado de comparación:', validPassword);
+
         if (!validPassword) {
+            console.log('❌ Login fallido - Contraseña incorrecta para:', email);
             return res.status(401).json({ message: 'Credenciales incorrectas' });
         }
 
@@ -187,6 +201,8 @@ router.post('/login', async (req, res) => {
             process.env.JWT_SECRET || 'tu_clave_secreta',
             { expiresIn: '24h' }
         );
+
+        console.log('✅ Login exitoso para:', email);
 
         res.json({
             token,
@@ -199,6 +215,7 @@ router.post('/login', async (req, res) => {
             }
         });
     } catch (error) {
+        console.error('❌ Error en login:', error);
         res.status(500).json({ message: 'Error en el servidor' });
     }
 });
@@ -265,15 +282,12 @@ router.post('/api/users', authenticateToken, isAdmin, async (req, res) => {
             return res.status(400).json({ message: 'El email ya está registrado' });
         }
 
-        // Encriptar la contraseña
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        // Crear el nuevo usuario
+        // Crear el nuevo usuario - NO hashear la contraseña aquí, 
+        // el middleware pre-save se encargará de eso
         const newUser = new UserSchema({
             name,
             email,
-            password: hashedPassword,
+            password, // password sin hashear
             role,
             active
         });
