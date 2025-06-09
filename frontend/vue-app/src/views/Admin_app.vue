@@ -340,14 +340,13 @@
               <table class="directory-table">
                 <thead>
                   <tr>
-                    <th>Número</th>
                     <th>Nombre</th>
                     <th>Anexo</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-if="!directoryContacts.length">
-                    <td colspan="3" class="text-center">
+                    <td colspan="2" class="text-center">
                       <div class="loading-message">
                         <i class="fas fa-spinner fa-spin"></i>
                         Cargando directorio...
@@ -355,12 +354,11 @@
                     </td>
                   </tr>
                   <tr v-else-if="!filteredDirectory.length">
-                    <td colspan="3" class="text-center">
+                    <td colspan="2" class="text-center">
                       No se encontraron resultados
                     </td>
                   </tr>
                   <tr v-for="contact in filteredDirectory" :key="contact.id">
-                    <td>{{ contact.number }}</td>
                     <td>{{ contact.name }}</td>
                     <td>{{ contact.extension }}</td>
                   </tr>
@@ -1337,7 +1335,12 @@ export default {
       }
     },
     searchDirectory() {
-      const searchTerm = this.directorySearch.toLowerCase();
+      if (!this.directorySearch) {
+        this.filteredDirectory = [...this.directoryContacts];
+        return;
+      }
+
+      const searchTerm = this.directorySearch.toLowerCase().trim();
       this.filteredDirectory = this.directoryContacts.filter(contact => 
         contact.name.toLowerCase().includes(searchTerm) ||
         contact.extension.toString().includes(searchTerm)

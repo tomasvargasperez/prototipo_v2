@@ -8,39 +8,52 @@
         </div>
         
         <div class="channels-section">
-          <h3>Chat Corporativo</h3>
-          <div class="channels-list">
-            <div 
-              v-for="channel in channels" 
-              :key="channel._id"
-              class="channel"
-              :class="{ active: selectedChannel === channel._id }"
-              @click="selectChannel(channel._id)"
-            >
-              <i :class="['fas', channel.isPublic ? 'fa-globe' : 'fa-lock']"></i>
-              <span class="channel-name">{{ channel.name }}</span>
+          <div class="chat-corporativo">
+            <h3>Chat Corporativo</h3>
+            <div class="channels-list">
+              <div 
+                v-for="channel in channels" 
+                :key="channel._id"
+                class="channel"
+                :class="{ active: selectedChannel === channel._id }"
+                @click="selectChannel(channel._id)"
+              >
+                <i :class="['fas', channel.isPublic ? 'fa-globe' : 'fa-lock']"></i>
+                <span class="channel-name">{{ channel.name }}</span>
+              </div>
             </div>
           </div>
           
-          <h3 class="mt-4">Otras Opciones</h3>
-          <div 
-            class="channel suggestion-box"
-            :class="{ active: showSuggestionBox }"
-            @click="toggleSuggestionBox"
-          >
-            <span class="channel-name">
-              <i class="fas fa-lightbulb"></i> Buzón de Sugerencias
-            </span>
-          </div>
-          
-          <div 
-            class="channel announcements-box"
-            :class="{ active: showAnnouncementsBox }"
-            @click="toggleAnnouncementsBox"
-          >
-            <span class="channel-name">
-              <i class="fas fa-bullhorn"></i> Foro de Anuncios
-            </span>
+          <div class="otras-opciones">
+            <h3>Otras Opciones</h3>
+            <div class="channels-list">
+              <div 
+                class="channel"
+                :class="{ active: showSuggestionBox }"
+                @click="toggleSuggestionBox"
+              >
+                <i class="fas fa-lightbulb"></i>
+                <span class="channel-name">Buzón de Sugerencias</span>
+              </div>
+              
+              <div 
+                class="channel"
+                :class="{ active: showAnnouncementsBox }"
+                @click="toggleAnnouncementsBox"
+              >
+                <i class="fas fa-bullhorn"></i>
+                <span class="channel-name">Foro de Anuncios</span>
+              </div>
+
+              <div 
+                class="channel"
+                :class="{ active: showPhonebookBox }"
+                @click="togglePhonebookBox"
+              >
+                <i class="fas fa-phone-alt"></i>
+                <span class="channel-name">Directorio Telefónico</span>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -52,7 +65,7 @@
       </div>
       
       <div class="chat-main">
-        <div v-if="!showSuggestionBox && !showAnnouncementsBox">
+        <div v-if="!showSuggestionBox && !showAnnouncementsBox && !showPhonebookBox" class="chat-content">
           <div class="chat-header">
             <h2># {{ getCurrentChannelName() }}</h2>
             <p class="channel-header-description" v-if="getCurrentChannelDescription()">
@@ -73,7 +86,7 @@
             </div>
           </div>
           
-          <div class="message-input">
+          <div class="message-input-container">
             <input 
               type="text" 
               v-model="newMessage" 
@@ -106,6 +119,53 @@
                 <span class="announcement-date">{{ formatDate(announcement.timestamp) }}</span>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div v-else-if="showPhonebookBox" class="phonebook-container">
+          <div class="phonebook-header">
+            <h2>Directorio Telefónico</h2>
+            <div class="search-bar">
+              <input 
+                type="text" 
+                v-model="phoneSearch" 
+                placeholder="Buscar por nombre o número..." 
+                @input="searchDirectory"
+              />
+              <button class="refresh-button" @click="fetchPhonebook" title="Actualizar directorio">
+                <i class="fas fa-sync-alt"></i>
+              </button>
+            </div>
+            <p class="last-update" v-if="lastUpdate">
+              Última actualización: {{ formatDate(lastUpdate) }}
+            </p>
+          </div>
+          
+          <div class="phonebook-table-container">
+            <table class="phonebook-table">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Anexo</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-if="loading">
+                  <td colspan="2" class="loading-message">
+                    <i class="fas fa-spinner fa-spin"></i> Cargando...
+                  </td>
+                </tr>
+                <tr v-else-if="filteredDirectory.length === 0">
+                  <td colspan="2" class="no-results">
+                    No se encontraron resultados
+                  </td>
+                </tr>
+                <tr v-else v-for="entry in filteredDirectory" :key="entry.id">
+                  <td>{{ entry.name }}</td>
+                  <td>{{ entry.extension }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -152,8 +212,14 @@ export default {
       statusInterval: null,
       showSuggestionBox: false,
       showAnnouncementsBox: false,
+      showPhonebookBox: false,
       suggestionText: '',
       announcements: [],
+      phoneSearch: '',
+      directory: [],
+      filteredDirectory: [],
+      lastUpdate: null,
+      loading: false,
     }
   },
   computed: {
@@ -267,6 +333,7 @@ export default {
       }
       this.showSuggestionBox = false;
       this.showAnnouncementsBox = false;
+      this.showPhonebookBox = false;
     },
 
     getCurrentChannelName() {
@@ -379,6 +446,7 @@ export default {
     toggleAnnouncementsBox() {
       this.showAnnouncementsBox = !this.showAnnouncementsBox;
       this.showSuggestionBox = false;
+      this.showPhonebookBox = false;
       if (this.showAnnouncementsBox) {
         this.fetchAnnouncements();
       }
@@ -437,6 +505,78 @@ export default {
         console.error('Error:', error);
       }
     },
+
+    togglePhonebookBox() {
+      this.showPhonebookBox = !this.showPhonebookBox;
+      this.showSuggestionBox = false;
+      this.showAnnouncementsBox = false;
+      if (this.showPhonebookBox) {
+        this.fetchPhonebook();
+      }
+    },
+
+    async fetchPhonebook() {
+      this.loading = true;
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:3000/api/phonebook', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al obtener el directorio');
+        }
+
+        const data = await response.json();
+        this.directory = data.entries;
+        this.filteredDirectory = [...this.directory];
+        this.lastUpdate = new Date();
+      } catch (error) {
+        console.error('Error al cargar el directorio:', error);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async searchDirectory() {
+      if (!this.phoneSearch.trim()) {
+        this.filteredDirectory = [...this.directory];
+        return;
+      }
+
+      const searchTerm = this.phoneSearch.toLowerCase().trim();
+      
+      // Búsqueda local por nombre y anexo
+      this.filteredDirectory = this.directory.filter(entry => 
+        entry.name.toLowerCase().includes(searchTerm) ||
+        entry.extension.toString().includes(searchTerm)
+      );
+
+      // Si no hay resultados locales, intentamos con el servidor
+      if (this.filteredDirectory.length === 0) {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch(`http://localhost:3000/api/phonebook/search?query=${encodeURIComponent(searchTerm)}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error('Error en la búsqueda');
+          }
+
+          const data = await response.json();
+          if (data.entries && data.entries.length > 0) {
+            this.filteredDirectory = data.entries;
+          }
+        } catch (error) {
+          console.error('Error en la búsqueda:', error);
+        }
+      }
+    },
   }
 }
 </script>
@@ -473,7 +613,7 @@ export default {
 .sidebar {
   width: 260px;
   min-width: 260px;
-  background-color: #2c3e50; /* Azul oscuro original */
+  background-color: #2c3e50;
   color: white;
   display: flex;
   flex-direction: column;
@@ -508,81 +648,87 @@ export default {
 }
 
 .channels-section {
-  padding: 15px;
-  border-bottom: 1px solid #ddd;
+  flex: 1;
+  overflow-y: auto;
 }
 
-.channels-section h3 {
-  margin: 0 0 10px 0;
+.chat-corporativo h3 {
+  padding: 15px 20px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
   color: rgba(255, 255, 255, 0.7);
-  font-size: 1.1em;
+  text-transform: uppercase;
 }
 
 .channels-list {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+  margin-bottom: 20px;
 }
 
 .channel {
+  padding: 10px 20px 10px 45px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  color: rgba(255, 255, 255, 0.7);
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s;
+}
+
+.channel i {
+  position: absolute;
+  left: 20px;
+  font-size: 14px;
+  width: 16px;
+  text-align: center;
 }
 
 .channel:hover {
   background-color: rgba(255, 255, 255, 0.1);
+  color: white;
 }
 
 .channel.active {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.channel i {
-  font-size: 0.9em;
-  color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
 }
 
 .channel-name {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.95em;
+  font-size: 14px;
 }
 
-.channels-section h3 {
-  margin: 0 0 10px 0;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 1.2em;
-  text-align: left;
-  padding-right: 15px;
+.otras-opciones h3 {
+  margin-top: 10px;
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
-.channels-section {
-  padding: 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
 .logout-wrapper {
-  padding: 15px 20px;
+  padding: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .logout-button {
   width: 100%;
-  padding: 8px;
-  background-color: rgba(255, 255, 255, 0.1);
-  color: white;
-  border: none;
+  padding: 10px;
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
+  color: rgba(255, 255, 255, 0.8);
   cursor: pointer;
-  transition: background-color 0.2s;
-  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
 }
 
 .logout-button:hover {
-  background-color: rgba(255, 255, 255, 0.2); /* Original */
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.logout-button i {
+  font-size: 14px;
 }
 
 /* Chat main area */
@@ -616,18 +762,18 @@ export default {
   z-index: 1;
 }
 
-.chat-messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  background-color: transparent;
+.chat-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
 }
 
 .chat-header {
   padding: 20px;
-  border-bottom: 1px solid rgba(44, 62, 80, 0.1);
-  background-color: #f0f4f8;  /* Color azulino suave */
-  text-align: left;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e1e4e8;
+  z-index: 2;
 }
 
 .chat-header h2 {
@@ -652,103 +798,113 @@ export default {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
+  padding-bottom: 80px; /* Espacio para el input */
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  max-height: calc(100vh - 180px); /* Ajuste para considerar el header y el input */
 }
 
 .message {
-  margin-bottom: 16px;
   display: flex;
+  margin-bottom: 15px;
   align-items: flex-start;
-}
-
-.own-message {
-  margin-left: auto;
-  flex-direction: row-reverse;
 }
 
 .message-avatar {
   width: 36px;
   height: 36px;
-  background-color: #95a5a6; /* Gris original */
+  background-color: #3498db;
   color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  margin-right: 12px;
-}
-
-.own-message .message-avatar {
-  background-color: #3498db; /* Azul principal original */
+  margin-right: 10px;
+  flex-shrink: 0;
 }
 
 .message-content {
-  background-color: #f1f3f5;
+  flex: 1;
+  background-color: #f8f9fa;
   padding: 10px 15px;
-  border-radius: 12px;
-  position: relative;
+  border-radius: 4px;
+  max-width: 80%;
+  text-align: left;
+}
+
+.own-message {
+  flex-direction: row-reverse;
+}
+
+.own-message .message-avatar {
+  margin-right: 0;
+  margin-left: 10px;
+  background-color: #2ecc71;
 }
 
 .own-message .message-content {
-  background-color: #eaf4fd;
+  background-color: #e3f2fd;
+  text-align: left;
 }
 
 .message-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 10px;
   margin-bottom: 5px;
-  font-size: 13px;
+  font-size: 12px;
+  color: #666;
 }
 
 .message-author {
-  font-weight: 600;
-  color: #2c3e50; /* Azul oscuro original */
-  margin-right: 8px;
+  font-weight: bold;
+  color: #2c3e50;
 }
 
 .message-time {
-  color: #95a5a6;
+  color: #999;
 }
 
 .message-text {
   word-break: break-word;
+  text-align: left;
+  color: #333;
 }
 
-.message-input {
-  padding: 15px 20px;
-  background-color: white;
+.message-input-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px;
+  background-color: #ffffff;
   border-top: 1px solid #e1e4e8;
   display: flex;
   gap: 10px;
-  position: sticky;
-  bottom: 0;
-  width: 100%;
+  z-index: 2;
 }
 
-.message-input input {
+.message-input-container input {
   flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #e1e4e8;
+  padding: 12px;
+  border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
+  text-align: left;
 }
 
-.message-input button {
-  padding: 8px 16px;
-  background-color: #2c3e50;
+.send-button {
+  padding: 12px 20px;
+  background-color: #3498db;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.3s;
 }
 
-.message-input button:hover {
-  background-color: #34495e;
+.send-button:hover {
+  background-color: #2980b9;
 }
 
 .mt-4 {
@@ -929,5 +1085,101 @@ export default {
 
 .suggestion-box:hover, .announcements-box:hover {
   background-color: rgba(255, 255, 255, 0.1); /* Original */
+}
+
+.phonebook-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.phonebook-header {
+  margin-bottom: 20px;
+}
+
+.phonebook-header h2 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.refresh-button {
+  padding: 8px 12px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.refresh-button:hover {
+  background-color: #2980b9;
+}
+
+.last-update {
+  font-size: 12px;
+  color: #666;
+  margin-top: 5px;
+}
+
+.phonebook-table-container {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.phonebook-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.phonebook-table th,
+.phonebook-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.phonebook-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.phonebook-table tr:hover {
+  background-color: #f5f7fa;
+}
+
+.loading-message,
+.no-results {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.loading-message i {
+  margin-right: 8px;
+}
+
+.phonebook-box {
+  margin-top: 10px;
 }
 </style>
