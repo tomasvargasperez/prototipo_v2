@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Corporativo - Mockups</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .mockup-section { margin-bottom: 40px; background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .mockup-title { color: #2c3e50; margin-bottom: 20px; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        .mockup { border: 2px solid #ddd; border-radius: 8px; background: white; margin: 20px 0; }
+        .header { background: #2c3e50; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-weight: bold; font-size: 18px; }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .avatar { width: 35px; height: 35px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+        .main-content { display: flex; height: 500px; }
+        .sidebar { width: 250px; background: #ecf0f1; border-right: 1px solid #bdc3c7; }
+        .chat-area { flex: 1; display: flex; flex-direction: column; }
+        .channels-list { padding: 10px; }
+        .channel-item { padding: 10px; margin: 5px 0; background: white; border-radius: 5px; cursor: pointer; border-left: 3px solid #3498db; }
+        .channel-item:hover { background: #e8f4f8; }
+        .channel-item.active { background: #3498db; color: white; }
+        .messages-area { flex: 1; padding: 20px; overflow-y: auto; background: #fafafa; }
+        .message { margin: 10px 0; padding: 10px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .message-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .message-author { font-weight: bold; color: #2c3e50; }
+        .message-time { color: #7f8c8d; font-size: 12px; }
+        .message-content { color: #34495e; }
+        .input-area { padding: 15px; background: white; border-top: 1px solid #bdc3c7; display: flex; gap: 10px; }
+        .message-input { flex: 1; padding: 10px; border: 1px solid #bdc3c7; border-radius: 5px; }
+        .send-btn { padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .send-btn:hover { background: #2980b9; }
+        .admin-dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .stats-card { background: #3498db; color: white; padding: 20px; border-radius: 8px; text-align: center; }
+        .stats-number { font-size: 24px; font-weight: bold; margin-bottom: 5px; }
+        .stats-label { font-size: 14px; opacity: 0.9; }
+        .admin-panel { background: white; border-radius: 8px; padding: 20px; }
+        .admin-tabs { display: flex; border-bottom: 1px solid #bdc3c7; margin-bottom: 20px; }
+        .admin-tab { padding: 10px 20px; cursor: pointer; border-bottom: 2px solid transparent; }
+        .admin-tab.active { border-bottom-color: #3498db; color: #3498db; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th, .table td { padding: 10px; text-align: left; border-bottom: 1px solid #bdc3c7; }
+        .table th { background: #ecf0f1; font-weight: bold; }
+        .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn-primary { background: #3498db; color: white; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-success { background: #27ae60; color: white; }
+        .login-form { max-width: 400px; margin: 0 auto; padding: 40px; background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; margin-bottom: 5px; font-weight: bold; color: #2c3e50; }
+        .form-input { width: 100%; padding: 12px; border: 1px solid #bdc3c7; border-radius: 5px; font-size: 14px; }
+        .form-input:focus { outline: none; border-color: #3498db; }
+        .login-btn { width: 100%; padding: 12px; background: #3498db; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+        .login-btn:hover { background: #2980b9; }
+        .suggestion-form { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .announcement-card { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .announcement-title { font-weight: bold; color: #856404; margin-bottom: 5px; }
+        .announcement-content { color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #2c3e50; margin-bottom: 30px;">Chat Corporativo - Mockups de Interfaz</h1>
+        
+        <!-- Login View -->
+        <div class="mockup-section">
+            <h2 class="mockup-title">🔐 Vista de Login</h2>
+            <div class="mockup">
+                <div class="login-form">
+                    <h3 style="text-align: center; margin-bottom: 30px; color: #2c3e50;">Iniciar Sesión</h3>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" placeholder="usuario@empresa.com" value="admin@empresa.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contraseña</label>
+                        <input type="password" class="form-input" placeholder="••••••••" value="password123">
+                    </div>
+                    <button class="login-btn">Iniciar Sesión</button>
+                    <p style="text-align: center; margin-top: 15px; color: #7f8c8d; font-size: 12px;">
+                        ¿No tienes cuenta? Contacta al administrador
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Chat View -->
+        <div class="mockup-section">
+            <h2 class="mockup-title">💬 Vista de Chat - Usuario</h2>
+            <div class="mockup">
+                <div class="header">
+                    <div class="logo">💬 Chat Corporativo</div>
+                    <div class="user-info">
+                        <span>Juan Pérez</span>
+                        <div class="avatar">JP</div>
+                    </div>
+                </div>
+                <div class="main-content">
+                    <div class="sidebar">
+                        <div class="channels-list">
+                            <h4 style="padding: 10px; color: #2c3e50; border-bottom: 1px solid #bdc3c7;">Canales</h4>
+                            <div class="channel-item active"># General</div>
+                            <div class="channel-item"># Proyectos</div>
+                            <div class="channel-item"># Recursos Humanos</div>
+                            <div class="channel-item"># IT Support</div>
+                            <div class="channel-item"># Marketing</div>
+                        </div>
+                        <div style="padding: 10px; border-top: 1px solid #bdc3c7; margin-top: 20px;">
+                            <h4 style="color: #2c3e50; margin-bottom: 10px;">Usuarios Online</h4>
+                            <div style="display: flex; align-items: center; margin: 5px 0;">
+                                <div style="width: 8px; height: 8px; background: #27ae60; border-radius: 50%; margin-right: 8px;"></div>
+                                <span style="font-size: 12px;">María García</span>
+                            </div>
+                            <div style="display: flex; align-items: center; margin: 5px 0;">
+                                <div style="width: 8px; height: 8px; background: #27ae60; border-radius: 50%; margin-right: 8px;"></div>
+                                <span style="font-size: 12px;">Carlos López</span>
+                            </div>
+                            <div style="display: flex; align-items: center; margin: 5px 0;">
+                                <div style="width: 8px; height: 8px; background: #27ae60; border-radius: 50%; margin-right: 8px;"></div>
+                                <span style="font-size: 12px;">Ana Martínez</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-area">
+                        <div class="messages-area">
+                            <div class="message">
+                                <div class="message-header">
+                                    <span class="message-author">María García</span>
+                                    <span class="message-time">10:30 AM</span>
+                                </div>
+                                <div class="message-content">¡Buenos días equipo! ¿Cómo va el proyecto?</div>
+                            </div>
+                            <div class="message">
+                                <div class="message-header">
+                                    <span class="message-author">Carlos López</span>
+                                    <span class="message-time">10:32 AM</span>
+                                </div>
+                                <div class="message-content">Todo bien, María. Estamos avanzando según lo planificado.</div>
+                            </div>
+                            <div class="message">
+                                <div class="message-header">
+                                    <span class="message-author">Tú</span>
+                                    <span class="message-time">10:35 AM</span>
+                                </div>
+                                <div class="message-content">Perfecto, tengo algunas ideas para la presentación del viernes.</div>
+                            </div>
+                        </div>
+                        <div class="input-area">
+                            <input type="text" class="message-input" placeholder="Escribe tu mensaje..." value="Excelente trabajo equipo! 👏">
+                            <button class="send-btn">Enviar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard View -->
+        <div class="mockup-section">
+            <h2 class="mockup-title">⚙️ Panel de Administración</h2>
+            <div class="mockup">
+                <div class="header">
+                    <div class="logo">⚙️ Panel de Administración</div>
+                    <div class="user-info">
+                        <span>Admin Usuario</span>
+                        <div class="avatar">AU</div>
+                    </div>
+                </div>
+                <div style="padding: 20px;">
+                    <div class="admin-dashboard">
+                        <div class="stats-card">
+                            <div class="stats-number">156</div>
+                            <div class="stats-label">Usuarios Totales</div>
+                        </div>
+                        <div class="stats-card">
+                            <div class="stats-number">12</div>
+                            <div class="stats-label">Canales Activos</div>
+                        </div>
+                        <div class="stats-card">
+                            <div class="stats-number">2,847</div>
+                            <div class="stats-label">Mensajes Hoy</div>
+                        </div>
+                        <div class="stats-card">
+                            <div class="stats-number">89</div>
+                            <div class="stats-label">Usuarios Online</div>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-panel">
+                        <div class="admin-tabs">
+                            <div class="admin-tab active">Usuarios</div>
+                            <div class="admin-tab">Canales</div>
+                            <div class="admin-tab">Anuncios</div>
+                            <div class="admin-tab">Sugerencias</div>
+                        </div>
+                        
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th>Rol</th>
+                                    <th>Estado</th>
+                                    <th>Última Actividad</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Juan Pérez</td>
+                                    <td>juan.perez@empresa.com</td>
+                                    <td>Usuario</td>
+                                    <td><span style="color: #27ae60;">Activo</span></td>
+                                    <td>Hace 5 min</td>
+                                    <td>
+                                        <button class="btn btn-primary">Editar</button>
+                                        <button class="btn btn-danger">Suspender</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>María García</td>
+                                    <td>maria.garcia@empresa.com</td>
+                                    <td>Usuario</td>
+                                    <td><span style="color: #27ae60;">Activo</span></td>
+                                    <td>Hace 2 min</td>
+                                    <td>
+                                        <button class="btn btn-primary">Editar</button>
+                                        <button class="btn btn-danger">Suspender</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Carlos López</td>
+                                    <td>carlos.lopez@empresa.com</td>
+                                    <td>Usuario</td>
+                                    <td><span style="color: #e74c3c;">Inactivo</span></td>
+                                    <td>Hace 2 horas</td>
+                                    <td>
+                                        <button class="btn btn-primary">Editar</button>
+                                        <button class="btn btn-success">Activar</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Suggestions View -->
+        <div class="mockup-section">
+            <h2 class="mockup-title">💡 Buzón de Sugerencias</h2>
+            <div class="mockup">
+                <div class="header">
+                    <div class="logo">💡 Buzón de Sugerencias</div>
+                    <div class="user-info">
+                        <span>Usuario</span>
+                        <div class="avatar">U</div>
+                    </div>
+                </div>
+                <div style="padding: 20px;">
+                    <div class="suggestion-form">
+                        <h3 style="margin-bottom: 15px; color: #2c3e50;">Enviar Sugerencia</h3>
+                        <div class="form-group">
+                            <label class="form-label">Tu sugerencia</label>
+                            <textarea class="form-input" rows="4" placeholder="Escribe aquí tu sugerencia para mejorar la plataforma...">Sería genial tener notificaciones push para mensajes importantes. Esto nos ayudaría a estar más conectados con el equipo.</textarea>
+                        </div>
+                        <button class="btn btn-primary">Enviar Sugerencia</button>
+                        <p style="margin-top: 10px; color: #7f8c8d; font-size: 12px;">
+                            Tu sugerencia será enviada de forma anónima
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Announcements View -->
+        <div class="mockup-section">
+            <h2 class="mockup-title">📢 Foro de Anuncios</h2>
+            <div class="mockup">
+                <div class="header">
+                    <div class="logo">📢 Anuncios Corporativos</div>
+                    <div class="user-info">
+                        <span>Usuario</span>
+                        <div class="avatar">U</div>
+                    </div>
+                </div>
+                <div style="padding: 20px;">
+                    <div class="announcement-card">
+                        <div class="announcement-title">🚨 Mantenimiento Programado</div>
+                        <div class="announcement-content">
+                            El próximo sábado 15 de enero realizaremos mantenimiento del sistema de 2:00 AM a 6:00 AM. 
+                            Durante este tiempo el chat estará temporalmente fuera de servicio.
+                        </div>
+                        <div style="margin-top: 10px; font-size: 12px; color: #7f8c8d;">
+                            Publicado por: Admin Usuario - Hace 2 horas
+                        </div>
+                    </div>
+                    
+                    <div class="announcement-card">
+                        <div class="announcement-title">🎉 Nueva Funcionalidad</div>
+                        <div class="announcement-content">
+                            Hemos agregado la funcionalidad de reacciones a los mensajes. 
+                            Ahora puedes reaccionar con emojis a los mensajes de tus compañeros.
+                        </div>
+                        <div style="margin-top: 10px; font-size: 12px; color: #7f8c8d;">
+                            Publicado por: Admin Usuario - Hace 1 día
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phonebook View -->
+        <div class="mockup-section">
+            <h2 class="mockup-title">📞 Directorio Telefónico</h2>
+            <div class="mockup">
+                <div class="header">
+                    <div class="logo">📞 Directorio Corporativo</div>
+                    <div class="user-info">
+                        <span>Usuario</span>
+                        <div class="avatar">U</div>
+                    </div>
+                </div>
+                <div style="padding: 20px;">
+                    <div style="margin-bottom: 20px;">
+                        <input type="text" class="form-input" placeholder="Buscar por nombre, departamento o teléfono..." style="width: 100%;">
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Departamento</th>
+                                <th>Teléfono</th>
+                                <th>Email</th>
+                                <th>Extensión</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Juan Pérez</td>
+                                <td>Desarrollo</td>
+                                <td>+1 555-0123</td>
+                                <td>juan.perez@empresa.com</td>
+                                <td>1234</td>
+                            </tr>
+                            <tr>
+                                <td>María García</td>
+                                <td>Recursos Humanos</td>
+                                <td>+1 555-0124</td>
+                                <td>maria.garcia@empresa.com</td>
+                                <td>1235</td>
+                            </tr>
+                            <tr>
+                                <td>Carlos López</td>
+                                <td>Marketing</td>
+                                <td>+1 555-0125</td>
+                                <td>carlos.lopez@empresa.com</td>
+                                <td>1236</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

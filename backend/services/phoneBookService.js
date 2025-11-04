@@ -60,11 +60,11 @@ class PhoneBookService {
                 total: entries.length,
                 lastUpdate: new Date().toISOString(),
                 entries: entries
-                    .map(entry => ({
-                        name: entry.Name.trim(),
-                        extension: entry.Telephone.toString(),
+                    .map(entry => ({ // Transforma cada entrada
+                        name: entry.Name.trim(),// Elimina espacios en blanco del nombre
+                        extension: entry.Telephone.toString(), // Convierte el teléfono a string
                         // Agregamos campos adicionales que podrían ser útiles
-                        searchText: `${entry.Name.trim()} ${entry.Telephone}`.toLowerCase()
+                        searchText: `${entry.Name.trim()} ${entry.Telephone}`.toLowerCase() // Texto para búsquedas
                     }))
                     .sort((a, b) => a.name.localeCompare(b.name)) // Ordenar por nombre
             };
