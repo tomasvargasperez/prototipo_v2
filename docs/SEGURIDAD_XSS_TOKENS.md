@@ -35,9 +35,9 @@ La aplicación actualmente:
 
 ## Vulnerabilidades XSS Identificadas
 
-### 1. Frontend Legacy - VULNERABILIDAD EXTREMA
+### 1. Frontend Legacy - VULNERABILIDAD EXTREMA (OBSOLETO)
 
-**Ubicación:** `frontend/legacy/public/js/chat.js`
+**Ubicación:** `frontend/legacy/public/js/chat.js` (Carpeta eliminada)
 
 **Código vulnerable:**
 ```javascript
