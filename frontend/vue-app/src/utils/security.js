@@ -1,6 +1,9 @@
 // frontend/vue-app/src/utils/security.js
 // Utilidades de seguridad para sanitización de datos
 
+// Variable global para guardar la función original de getItem
+let originalGetItemFunction = null;
+
 /**
  * Sanitiza datos antes de almacenar en localStorage
  * Escapa caracteres peligrosos que podrían causar XSS
@@ -103,11 +106,19 @@ function desanitizeForStorage(data) {
  */
 export function setupLocalStorageInterceptor() {
     // Guardar la función original
-    const originalSetItem = localStorage.setItem.bind(localStorage);
-    const originalGetItem = localStorage.getItem.bind(localStorage);
+    const originalGetItem = Storage.prototype.getItem;
+    const originalSetItem = Storage.prototype.setItem;
     
-    // Sobrescribir setItem para sanitizar automáticamente
-    localStorage.setItem = function(key, value) {
+    // Guardar referencia a la función original para acceso directo
+    originalGetItemFunction = originalGetItem.bind(localStorage);
+    
+    // Exponer la función en window para acceso desde consola
+    if (typeof window !== 'undefined') {
+        window._getRawItem = originalGetItem.bind(localStorage);
+    }
+    
+    // Sobrescribir setItem en Storage.prototype
+    Storage.prototype.setItem = function(key, value) {
         let sanitizedValue = value;
         
         // Si el valor es un string que parece JSON, intentar parsearlo
@@ -125,13 +136,19 @@ export function setupLocalStorageInterceptor() {
             sanitizedValue = sanitizeForStorage(String(value));
         }
         
+        // Debug: verificar que se está sanitizando
+        if (key === 'test_xss') {
+            console.log('🔍 Debug - Valor original:', value);
+            console.log('🔍 Debug - Valor sanitizado:', sanitizedValue);
+        }
+        
         // Llamar a la función original con el valor sanitizado
-        return originalSetItem(key, sanitizedValue);
+        return originalSetItem.call(this, key, sanitizedValue);
     };
     
-    // Sobrescribir getItem para desanitizar automáticamente
-    localStorage.getItem = function(key) {
-        const value = originalGetItem(key);
+    // Sobrescribir getItem en Storage.prototype
+    Storage.prototype.getItem = function(key) {
+        const value = originalGetItem.call(this, key);
         
         if (value === null) {
             return null;
@@ -147,6 +164,10 @@ export function setupLocalStorageInterceptor() {
         }
     };
     
+    // Verificar que setItem fue sobrescrito
     console.log('✅ Interceptor de seguridad de localStorage activado');
+    console.log('🔍 Verificando interceptor...');
+    console.log('setItem es función personalizada?', localStorage.setItem.toString().includes('sanitizedValue'));
+    console.log('getItem es función personalizada?', localStorage.getItem.toString().includes('desanitizeForStorage'));
 }
 

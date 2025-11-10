@@ -4,6 +4,7 @@ const Message = require('../models/Message');
 const Channel = require('../models/Channel');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const { sanitizeMessage, desanitizeMessage } = require('../utils/sanitize');
 
 // Middleware de autenticación
 const authenticateToken = async (req, res, next) => {
@@ -56,7 +57,16 @@ router.get('/api/messages/:channelId', authenticateToken, checkChannelAccess, as
             .populate('userId', 'name')
             .sort({ createdAt: 1 });
         
-        res.json(messages);
+        // Desanitizar mensajes antes de enviar (para mostrar legible)
+        const desanitizedMessages = messages.map(msg => {
+            const msgObj = msg.toObject();
+            return {
+                ...msgObj,
+                text: desanitizeMessage(msgObj.text)
+            };
+        });
+        
+        res.json(desanitizedMessages);
     } catch (error) {
         console.error('Error al obtener mensajes:', error);
         res.status(500).json({ message: 'Error al obtener los mensajes' });
@@ -79,8 +89,11 @@ router.post('/api/messages', authenticateToken, async (req, res) => {
             return res.status(403).json({ message: 'No tienes acceso a este canal' });
         }
 
+        // Sanitizar el texto del mensaje antes de guardar
+        const sanitizedText = sanitizeMessage(text);
+        
         const message = new Message({
-            text,
+            text: sanitizedText,
             userId: req.user.userId,
             channel: channelId
         });
@@ -90,7 +103,13 @@ router.post('/api/messages', authenticateToken, async (req, res) => {
         const populatedMessage = await Message.findById(message._id)
             .populate('userId', 'name');
 
-        res.status(201).json(populatedMessage);
+        // Desanitizar mensaje antes de enviar (para mostrar legible)
+        const desanitizedMessage = {
+            ...populatedMessage.toObject(),
+            text: desanitizeMessage(populatedMessage.text)
+        };
+
+        res.status(201).json(desanitizedMessage);
     } catch (error) {
         console.error('Error al crear mensaje:', error);
         res.status(500).json({ message: 'Error al crear el mensaje' });

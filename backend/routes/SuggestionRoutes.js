@@ -3,6 +3,7 @@ const router = express.Router();
 const SuggestionSchema = require('../models/Suggestion');
 const jwt = require('jsonwebtoken');
 const { encrypt, decrypt } = require('../utils/encryption');
+const { sanitizeMessage, desanitizeMessage } = require('../utils/sanitize');
 const User = require('../models/User');
 
 // Middleware de autenticación
@@ -47,10 +48,13 @@ router.post('/', authenticateToken, async (req, res) => {
             });
         }
 
-        // Encriptar el contenido
+        // Sanitizar el contenido antes de encriptar
+        const sanitizedContent = sanitizeMessage(req.body.content);
+        
+        // Encriptar el contenido sanitizado
         let encryptedContent;
         try {
-            encryptedContent = encrypt(req.body.content);
+            encryptedContent = encrypt(sanitizedContent);
         } catch (encryptError) {
             console.error('Error al encriptar:', encryptError);
             return res.status(500).json({ 
@@ -90,12 +94,13 @@ router.get('/', authenticateToken, isAdmin, async (req, res) => {
     try {
         const suggestions = await SuggestionSchema.find().sort({ timestamp: -1 });
         
-        // Desencriptar el contenido de cada sugerencia
+        // Desencriptar y desanitizar el contenido de cada sugerencia
         const decryptedSuggestions = suggestions.map(suggestion => {
             try {
+                const decryptedContent = decrypt(suggestion.content);
                 return {
                     _id: suggestion._id,
-                    content: decrypt(suggestion.content),
+                    content: desanitizeMessage(decryptedContent), // Desanitizar para mostrar legible
                     timestamp: suggestion.timestamp,
                     status: suggestion.status
                 };

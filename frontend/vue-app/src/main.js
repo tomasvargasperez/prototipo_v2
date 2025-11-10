@@ -3,6 +3,11 @@
 //import App from './App.vue'
 //
 //createApp(App).mount('#app')
+
+// 👉 ACTIVAR SANITIZACIÓN AUTOMÁTICA (Protección XSS)
+import { setupLocalStorageInterceptor } from './utils/security'
+setupLocalStorageInterceptor()
+
 import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'

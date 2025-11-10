@@ -16,6 +16,7 @@ const phoneBookRoutes = require('./routes/phoneBookRoutes');
 const Message = require('./models/Message');
 const User = require('./models/User');
 const socket = require('./socket');
+const { sanitizeMessage, desanitizeMessage } = require('./utils/sanitize');
 
 // Cargar variables de entorno
 dotenv.config();
@@ -75,7 +76,7 @@ io.on('connection', (socket) => {
                 .filter(msg => msg.userId != null) // Filtrar mensajes con usuarios nulos
                 .map(msg => ({
                     _id: msg._id,
-                    text: msg.text,
+                    text: desanitizeMessage(msg.text), // Desanitizar para mostrar legible
                     userId: msg.userId._id,
                     author: msg.userId.name || 'Usuario Eliminado',
                     timestamp: msg.createdAt
@@ -102,9 +103,12 @@ io.on('connection', (socket) => {
                 return;
             }
 
+            // Sanitizar el texto del mensaje antes de guardar
+            const sanitizedText = sanitizeMessage(text);
+            
             // Crear y guardar el mensaje
             const newMessage = new Message({
-                text,
+                text: sanitizedText,
                 userId,
                 channel: channelId
             });
@@ -115,10 +119,10 @@ io.on('connection', (socket) => {
             const populatedMessage = await Message.findById(savedMessage._id)
                 .populate('userId', 'name');
 
-            // Emitir mensaje al canal
+            // Emitir mensaje al canal (desanitizado para mostrar legible)
             io.to(channelId).emit('new_message', {
                 _id: populatedMessage._id,
-                text: populatedMessage.text,
+                text: desanitizeMessage(populatedMessage.text), // Desanitizar para mostrar legible
                 userId: populatedMessage.userId._id,
                 author: populatedMessage.userId.name,
                 timestamp: populatedMessage.createdAt
