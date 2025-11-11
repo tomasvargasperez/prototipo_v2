@@ -18,48 +18,49 @@ Aplicación de mensajería corporativa en tiempo real construida con Node.js, Ex
 ```
 app_chat_corp/
 ├── backend/
-│   ├── app.js                # EntryPoint Express + HTTP + Socket.IO
-│   ├── socket.js             # Inicialización de Socket.IO
+│   ├── app.js                # Orquesta Express, Socket.IO y sanitiza mensajes antes de persistir/enviar
+│   ├── socket.js             # Inicializa Socket.IO y configura eventos de tiempo real
 │   ├── routes/               # Rutas HTTP
-│   │   ├── UserRoutes.js
-│   │   ├── MessageRoutes.js
-│   │   ├── ChannelRoutes.js
-│   │   ├── AnnouncementRoutes.js
-│   │   ├── SuggestionRoutes.js
-│   │   ├── DashboardRoutes.js
-│   │   └── phoneBookRoutes.js
+│   │   ├── UserRoutes.js            # Login, JWT y gestión de usuarios
+│   │   ├── MessageRoutes.js         # CRUD mensajes con sanitización backend
+│   │   ├── ChannelRoutes.js         # Administración de canales y accesos
+│   │   ├── AnnouncementRoutes.js    # Anuncios corporativos para el chat
+│   │   ├── SuggestionRoutes.js      # Sugerencias encriptadas + sanitización
+│   │   ├── DashboardRoutes.js       # Métricas administrativas agregadas
+│   │   └── phoneBookRoutes.js       # API del directorio telefónico
 │   ├── controllers/
-│   │   ├── UserController.js
-│   │   ├── MessageController.js
-│   │   └── phoneBookController.js
+│   │   ├── UserController.js        # Lógica alternativa de autenticación/usuarios
+│   │   ├── MessageController.js     # Controlador legado de mensajes (no principal)
+│   │   └── phoneBookController.js   # Adaptadores para integrarse con el phonebook
 │   ├── models/               # Modelos Mongoose
-│   │   ├── User.js
-│   │   ├── Message.js
-│   │   ├── Channel.js
-│   │   ├── Announcement.js
-│   │   └── Suggestion.js
+│   │   ├── User.js                  # Esquema usuarios (roles, activo, hash)
+│   │   ├── Message.js               # Esquema mensajes sanitizados
+│   │   ├── Channel.js               # Esquema canales y permisos
+│   │   ├── Announcement.js          # Esquema anuncios
+│   │   └── Suggestion.js            # Esquema sugerencias cifradas
 │   ├── middleware/
-│   │   └── auth.js           # Verificación JWT básica
+│   │   └── auth.js           # Middleware de verificación JWT para rutas protegidas
 │   ├── services/
-│   │   └── phoneBookService.js
+│   │   └── phoneBookService.js      # Consumo y cacheo del phonebook externo
 │   └── utils/
-│       └── encryption.js     # AES-256 (CBC) para sugerencias
+│       ├── encryption.js     # AES-256 (CBC) para sugerencias
+│       └── sanitize.js       # Funciones de sanitización/des-sanitización backend
 └── frontend/
     └── vue-app/
         ├── src/
-        │   ├── main.js
+        │   ├── main.js              # Punto de entrada Vue + registro interceptor storage
         │   ├── utils/
-        │   │   └── security.js        # Interceptor y helpers de sanitización localStorage
-        │   ├── App.vue
+        │   │   └── security.js        # Interceptor localStorage y helpers sanitización
+        │   ├── App.vue               # Shell principal de la SPA
         │   ├── router/
-        │   │   └── index.js
+        │   │   └── index.js          # Rutas `/login`, `/chat`, `/admin`
         │   ├── services/
-        │   │   └── axiosConfig.js
+        │   │   └── axiosConfig.js    # Axios con inclusión automática de JWT y manejo 401
         │   └── views/
-        │       ├── Login.vue
-        │       ├── Chat.vue
-        │       ├── Admin_app.vue
-        │       └── Admin_app_old.vue
+        │       ├── Login.vue         # UI de autenticación
+        │       ├── Chat.vue          # Chat en tiempo real + consumo sanitizado
+        │       ├── Admin_app.vue     # Panel administrativo vigente
+        │       └── Admin_app_old.vue # Versión previa del panel (referencia)
         └── public/
 ```
 
