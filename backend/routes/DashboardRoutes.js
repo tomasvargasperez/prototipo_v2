@@ -3,25 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const Channel = require('../models/Channel');
 const Message = require('../models/Message');
-const jwt = require('jsonwebtoken');
-
-// Middleware de autenticación
-const authenticateToken = async (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ message: 'No se proporcionó token de acceso' });
-    }
-
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'tu_clave_secreta');
-        req.user = decoded;
-        next();
-    } catch (err) {
-        return res.status(403).json({ message: 'Token inválido' });
-    }
-};
+const authenticateToken = require('../middleware/auth');
 
 // Middleware para verificar si es administrador
 const isAdmin = async (req, res, next) => {

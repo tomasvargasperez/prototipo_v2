@@ -388,13 +388,36 @@ export default {
       }
     },
 
-    logout() {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      if (this.socket) {
-        this.socket.disconnect()
+    async logout() {
+      try {
+        const token = localStorage.getItem('token');
+        
+        // Notificar al backend antes de limpiar el token
+        if (token) {
+          try {
+            await fetch('http://localhost:3000/logout', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            });
+          } catch (error) {
+            // Si falla la llamada al backend, continuamos con el logout local
+            console.error('Error al notificar logout al servidor:', error);
+          }
+        }
+      } catch (error) {
+        console.error('Error en logout:', error);
+      } finally {
+        // Limpiar datos locales y desconectar socket
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        if (this.socket) {
+          this.socket.disconnect();
+        }
+        this.$router.push('/login');
       }
-      this.$router.push('/login')
     },
 
     toggleSuggestionBox() {

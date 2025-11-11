@@ -3,26 +3,8 @@ const router = express.Router();
 const Message = require('../models/Message');
 const Channel = require('../models/Channel');
 const User = require('../models/User');
-const jwt = require('jsonwebtoken');
+const authenticateToken = require('../middleware/auth');
 const { sanitizeMessage, desanitizeMessage } = require('../utils/sanitize');
-
-// Middleware de autenticación
-const authenticateToken = async (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ message: 'No se proporcionó token de acceso' });
-    }
-
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'tu_clave_secreta');
-        req.user = decoded;
-        next();
-    } catch (err) {
-        return res.status(403).json({ message: 'Token inválido' });
-    }
-};
 
 // Middleware para verificar acceso al canal
 const checkChannelAccess = async (req, res, next) => {

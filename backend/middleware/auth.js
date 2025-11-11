@@ -1,19 +1,26 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-module.exports = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+module.exports = async (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
-  if (!authHeader?.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Token no proporcionado' });
+  if (!token) {
+    return res.status(401).json({ message: 'No se proporcionó token de acceso' });
   }
 
-  const token = authHeader.split(' ')[1];
-
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'tu_clave_secreta');
+    
+    // Verificar si el usuario sigue activo
+    const user = await User.findById(decoded.userId);
+    if (!user || !user.active) {
+      return res.status(403).json({ message: 'Usuario inactivo o no encontrado' });
+    }
+
     req.user = decoded;
     next();
   } catch (err) {
-    return res.status(401).json({ error: 'Token inválido' });
+    return res.status(403).json({ message: 'Token inválido' });
   }
 };

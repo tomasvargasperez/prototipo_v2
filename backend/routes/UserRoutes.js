@@ -4,33 +4,9 @@ const bcrypt = require('bcrypt');
 const UserSchema = require('../models/User'); 
 const UserController = require('../controllers/UserController'); 
 const jwt = require('jsonwebtoken');
+const authenticateToken = require('../middleware/auth');
 //Importando el controllador 
 const userController = new UserController(); // creando una instancia de ese controlador
-
-// Middleware de autenticación
-const authenticateToken = async (req, res, next) => {
-	const authHeader = req.headers['authorization'];
-	const token = authHeader && authHeader.split(' ')[1];
-
-	if (!token) {
-		return res.status(401).json({ message: 'No se proporcionó token de acceso' });
-	}
-
-	try {
-		const decoded = jwt.verify(token, process.env.JWT_SECRET || 'tu_clave_secreta');
-		
-		// Verificar si el usuario sigue activo
-		const user = await UserSchema.findById(decoded.userId);
-		if (!user || !user.active) {
-			return res.status(403).json({ message: 'Usuario inactivo o no encontrado' });
-		}
-
-		req.user = decoded;
-		next();
-	} catch (err) {
-		return res.status(403).json({ message: 'Token inválido' });
-	}
-};
 
 // Middleware para verificar si es administrador
 const isAdmin = async (req, res, next) => {
@@ -216,6 +192,32 @@ router.post('/login', async (req, res) => {
         });
     } catch (error) {
         console.error('❌ Error en login:', error);
+        res.status(500).json({ message: 'Error en el servidor' });
+    }
+});
+
+// Ruta de logout
+router.post('/logout', authenticateToken, async (req, res) => {
+    try {
+        // Obtener información del usuario desde el token
+        const user = await UserSchema.findById(req.user.userId);
+        
+        if (user) {
+            console.log('🚪 Logout exitoso para:', {
+                userId: user._id,
+                email: user.email,
+                name: user.name,
+                role: user.role || 'user',
+                timestamp: new Date().toISOString()
+            });
+        } else {
+            console.log('⚠️ Logout - Usuario no encontrado en BD:', req.user.userId);
+        }
+
+        res.json({ message: 'Logout exitoso' });
+    } catch (error) {
+        console.error('❌ Error en logout:', error);
+        // Aunque haya error, permitimos el logout
         res.status(500).json({ message: 'Error en el servidor' });
     }
 });
