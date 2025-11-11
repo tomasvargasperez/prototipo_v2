@@ -82,7 +82,7 @@ router.get('/dashboard', authenticateToken, isAdmin, async (req, res) => {
                 $sort: { messages: -1 }
             }
         ]);
-        console.log('📊 Actividad por canal:', channelActivity);
+        console.log('📊 Actividad por canal: consultada exitosamente');
 
         // Obtener usuarios más activos
         console.log('🔍 Consultando usuarios más activos...');
@@ -124,7 +124,7 @@ router.get('/dashboard', authenticateToken, isAdmin, async (req, res) => {
             rank: index + 1
         }));
 
-        console.log('👥 Top usuarios:', rankedUsers);
+        // console.log('👥 Top usuarios:', rankedUsers);
 
         // Obtener actividad de usuarios por día (últimos 7 días)
         console.log('🔍 Consultando actividad diaria...');
@@ -163,7 +163,7 @@ router.get('/dashboard', authenticateToken, isAdmin, async (req, res) => {
             });
         }
 
-        console.log('📅 Actividad diaria:', userActivity);
+        // console.log('📅 Actividad diaria:');
 
         // Simular datos de conexiones por hora
         const connections = Array.from({ length: 24 }, (_, i) => ({
@@ -184,7 +184,7 @@ router.get('/dashboard', authenticateToken, isAdmin, async (req, res) => {
             connections
         };
 
-        console.log('✅ Datos del dashboard recopilados exitosamente');
+        console.log('✅ Datos del dashboard recopilados exitosamente\n');
         res.json(responseData);
     } catch (error) {
         console.error('❌ Error al obtener datos del dashboard:', error);

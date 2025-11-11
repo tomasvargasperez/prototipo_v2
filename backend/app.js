@@ -21,6 +21,9 @@ const { sanitizeMessage, desanitizeMessage } = require('./utils/sanitize');
 // Cargar variables de entorno
 dotenv.config();
 
+// Configurar Mongoose para suprimir advertencia de deprecación
+mongoose.set('strictQuery', true);
+
 // Inicialización de Express y servidor HTTP
 const app = express();
 const server = http.createServer(app);
