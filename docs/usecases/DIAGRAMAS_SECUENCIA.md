@@ -242,3 +242,61 @@ sequenceDiagram
 - Dashboard con métricas en tiempo real
 - Gestión completa de usuarios y canales
 - Control de estados de sugerencias
+
+---
+
+## 11. Modelo Gráfico Global
+
+```mermaid
+graph LR
+    subgraph Frontend ["Frontend (Vue.js)"]
+        LoginView["Login.vue"]
+        ChatView["Chat.vue"]
+        AdminPanel["Admin_app.vue"]
+        Axios["axiosConfig.js"]
+        Storage["localStorage interceptor"]
+    end
+
+    subgraph Backend ["Backend (Node.js/Express)"]
+        APIRoutes["REST Routes"]
+        SocketServer["Socket.IO"]
+        AuthController["UserRoutes.js"]
+        MessagesController["MessageRoutes.js"]
+        SuggestionsController["SuggestionRoutes.js"]
+        AnnouncementsController["AnnouncementRoutes.js"]
+        Utils["utils/sanitize.js"]
+    end
+
+    subgraph Database ["MongoDB"]
+        Users["Users"]
+        Channels["Channels"]
+        Messages["Messages"]
+        Suggestions["Suggestions (Encrypted)"]
+        Announcements["Announcements"]
+    end
+
+    subgraph Security ["Seguridad"]
+        Sanitization["Sanitización LocalStorage"]
+        BackendSanitization["Sanitización Backend"]
+        JWT["JWT (24h)"]
+    end
+
+    LoginView -->|POST /login| AuthController
+    Axios -->|Bearer Token| APIRoutes
+    ChatView -->|Socket Events| SocketServer
+    AdminPanel --> APIRoutes
+    APIRoutes --> Users
+    APIRoutes --> Channels
+    APIRoutes --> Messages
+    APIRoutes --> Suggestions
+    APIRoutes --> Announcements
+    SocketServer --> Messages
+    AuthController --> Sanitization
+    MessagesController --> BackendSanitization
+    SuggestionsController --> BackendSanitization
+    AnnouncementsController --> BackendSanitization
+    Storage --> Sanitization
+    Security --> Frontend
+    Security --> Backend
+    JWT --> Axios
+```

@@ -7,6 +7,13 @@ Aplicación de mensajería corporativa en tiempo real construida con Node.js, Ex
 - MongoDB 5+
 - npm 8+
 
+## Resumen de mejoras recientes
+- Sanitización automática de `localStorage` mediante interceptor global (`frontend/vue-app/src/utils/security.js`) para mitigar robo de tokens por XSS.
+- Sanitización/desanitización de mensajes de chat en el backend (`backend/app.js`, `backend/routes/MessageRoutes.js`) antes de persistir y al emitir eventos tiempo real.
+- Sanitización/desanitización de sugerencias antes de encriptar y después de desencriptar (`backend/routes/SuggestionRoutes.js`).
+- Documentación de pruebas y guías de sanitización consolidada en `docs/`.
+- Eliminación del código legado (`frontend/legacy/`) para simplificar mantenimiento.
+
 ## Estructura del proyecto (real)
 ```
 app_chat_corp/
@@ -41,6 +48,8 @@ app_chat_corp/
     └── vue-app/
         ├── src/
         │   ├── main.js
+        │   ├── utils/
+        │   │   └── security.js        # Interceptor y helpers de sanitización localStorage
         │   ├── App.vue
         │   ├── router/
         │   │   └── index.js
@@ -165,8 +174,15 @@ Nota: `backend/controllers/MessageController.js` usa un modelo alterno (`content
 ## Seguridad
 - JWT: verificación en middleware `backend/middleware/auth.js` (básico). Rutas admin usan `isAdmin` (en archivos de rutas).
 - Roles: `admin` | `user`.
+- Sanitización frontend: interceptor de `localStorage` evita almacenar entidades peligrosas y des-sanitiza al consumirlas (`utils/security.js`).
+- Sanitización backend: mensajes y sugerencias se sanitizan antes de persistir y se des-sanitizan antes de enviarse al cliente (`backend/utils/sanitize.js`).
 - Sugerencias: encriptación simétrica AES-256-CBC (clave derivada con scrypt). Recomendado migrar a AES-GCM (AEAD) para integridad.
 - CORS Socket.IO: en `socket.js` restringido a `http://localhost:5173` y `5174` en dev.
+
+## Pruebas de sanitización
+- `docs/security/PRUEBA_SANITIZACION.md`: Validación rápida del interceptor de `localStorage`.
+- `docs/security/PRUEBA_PASO_A_PASO.md`: Guía detallada para ejecutar pruebas en consola del navegador.
+- `docs/security/SANITIZACION.md`: Contexto entre sanitización frontend vs backend.
 
 ## Variables y consideraciones adicionales
 - Diferencias de expiración: `UserController.login()` usa 1h; rutas de `UserRoutes.js` emiten 24h.
@@ -216,3 +232,9 @@ En `socket.js` están permitidos `http://localhost:5173` y `5174`. Si cambias el
 
 ### ¿Dónde están documentados los eventos de tiempo real?
 En la sección “Eventos Socket.IO” de este README. Principales: `join_channel`, `message_history`, `send_message`, `new_message`.
+
+### ¿Cuáles son los próximos pasos recomendados de seguridad?
+- Reducir la vigencia del access token (actualmente 24h) y diseñar un flujo de refresh seguro.
+- Configurar cabeceras de seguridad (CSP, HSTS, X-Frame-Options, X-Content-Type-Options, etc.).
+- Extender la sanitización a anuncios y campos de usuario.
+- Incorporar validaciones exhaustivas de entrada y rate-limiting en endpoints sensibles.
