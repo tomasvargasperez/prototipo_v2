@@ -139,36 +139,23 @@ router.delete('/user/:id', (req, res) => {
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log('🔍 Intento de login - Email:', email);
 
         const user = await UserSchema.findOne({ email });
         if (!user) {
-            console.log('❌ Login fallido - Usuario no encontrado:', email);
+            console.log('❌ Login fallido - Usuario no encontrado');
             return res.status(401).json({ message: 'Credenciales incorrectas' });
         }
 
-        console.log('✅ Usuario encontrado:', {
-            id: user._id,
-            email: user.email,
-            active: user.active,
-            passwordLength: user.password.length
-        });
-
         // Verificar si el usuario está activo
         if (!user.active) {
-            console.log('❌ Login fallido - Usuario inactivo:', email);
+            console.log('❌ Login fallido - Usuario inactivo');
             return res.status(403).json({ message: 'Usuario inactivo. Contacte al administrador.' });
         }
 
-        console.log('🔐 Comparando contraseñas...');
-        console.log('Password proporcionada (length):', password.length);
-        console.log('Password hash almacenado (length):', user.password.length);
-
         const validPassword = await bcrypt.compare(password, user.password);
-        console.log('🔑 Resultado de comparación:', validPassword);
 
         if (!validPassword) {
-            console.log('❌ Login fallido - Contraseña incorrecta para:', email);
+            console.log('❌ Login fallido - Contraseña incorrecta');
             return res.status(401).json({ message: 'Credenciales incorrectas' });
         }
 
@@ -178,7 +165,7 @@ router.post('/login', async (req, res) => {
             { expiresIn: '24h' }
         );
 
-        console.log('✅ Login exitoso para:', email);
+        console.log('✅ Login exitoso -', user.name);
 
         res.json({
             token,
@@ -203,15 +190,9 @@ router.post('/logout', authenticateToken, async (req, res) => {
         const user = await UserSchema.findById(req.user.userId);
         
         if (user) {
-            console.log('🚪 Logout exitoso para:', {
-                userId: user._id,
-                email: user.email,
-                name: user.name,
-                role: user.role || 'user',
-                timestamp: new Date().toISOString()
-            });
+            console.log('🚪 Logout exitoso -', user.name);
         } else {
-            console.log('⚠️ Logout - Usuario no encontrado en BD:', req.user.userId);
+            console.log('⚠️ Logout - Usuario no encontrado en BD');
         }
 
         res.json({ message: 'Logout exitoso' });

@@ -422,6 +422,8 @@ export default {
 
     toggleSuggestionBox() {
       this.showSuggestionBox = !this.showSuggestionBox;
+      this.showAnnouncementsBox = false;
+      this.showPhonebookBox = false;
       this.suggestionText = '';
     },
     
