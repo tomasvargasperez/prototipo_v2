@@ -11,30 +11,62 @@ class UserController
 			// Buscar al usuario por correo electrónico 
 			const user = await User.findOne({ email }); 
 			if (!user) {
-				return { "status": "error", "message": "El usuario no existe" }; 
+				console.log('❌ Login fallido - Usuario no encontrado');
+				return { 
+					status: "error", 
+					message: "Credenciales incorrectas",
+					errorType: "USER_NOT_FOUND"
+				}; 
 			}   
+			
+			// Verificar si el usuario está activo
+			if (!user.active) {
+				console.log('❌ Login fallido - Usuario inactivo');
+				return { 
+					status: "error", 
+					message: "Usuario inactivo. Contacte al administrador.",
+					errorType: "USER_INACTIVE"
+				};
+			}
+			
 			// Comparar la contraseña proporcionada con la contraseña almacenada
 			const passwordMatch = await bcrypt.compare(password, user.password); 
-			 if (!passwordMatch) { 
-				return { "status": "error", "message": "Contraseña incorrecta" }; 
+			if (!passwordMatch) { 
+				console.log('❌ Login fallido - Contraseña incorrecta');
+				return { 
+					status: "error", 
+					message: "Credenciales incorrectas",
+					errorType: "INVALID_PASSWORD"
+				}; 
 			} 
+			
 			// Generar un token JWT para el usuario 
 			const token = jwt.sign(
-				{ userId: user._id, email: user.email }, 
-				process.env.JWT_SECRET, 
-				{ expiresIn: '1h' }
+				{ userId: user._id }, 
+				process.env.JWT_SECRET || 'tu_clave_secreta', 
+				{ expiresIn: '24h' }
 			); 
+			
+			console.log('✅ Login exitoso -', user.name);
+			
 			return { 
 				status: "success", 
 				token: token,
 				user: {
-				  userId: user._id,
-				  name: user.name
+					userId: user._id,
+					name: user.name,
+					email: user.email,
+					role: user.role || 'user',
+					active: user.active
 				}
 			};		  
 		} catch (error) { 
-			console.log(error);
-			return { "status": "error", "message": "Error al iniciar sesión"};
+			console.error('❌ Error en login:', error);
+			return { 
+				status: "error", 
+				message: "Error en el servidor",
+				errorType: "SERVER_ERROR"
+			};
 		} 
 	}    
 

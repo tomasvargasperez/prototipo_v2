@@ -3,7 +3,6 @@ const router = express.Router();
 const bcrypt = require('bcrypt'); 
 const UserSchema = require('../models/User'); 
 const UserController = require('../controllers/UserController'); 
-const jwt = require('jsonwebtoken');
 const authenticateToken = require('../middleware/auth');
 //Importando el controllador 
 const userController = new UserController(); // creando una instancia de ese controlador
@@ -140,43 +139,25 @@ router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        const user = await UserSchema.findOne({ email });
-        if (!user) {
-            console.log('❌ Login fallido - Usuario no encontrado');
-            return res.status(401).json({ message: 'Credenciales incorrectas' });
-        }
+        // Usar el método login del controlador
+        const result = await userController.login(email, password);
 
-        // Verificar si el usuario está activo
-        if (!user.active) {
-            console.log('❌ Login fallido - Usuario inactivo');
-            return res.status(403).json({ message: 'Usuario inactivo. Contacte al administrador.' });
-        }
-
-        const validPassword = await bcrypt.compare(password, user.password);
-
-        if (!validPassword) {
-            console.log('❌ Login fallido - Contraseña incorrecta');
-            return res.status(401).json({ message: 'Credenciales incorrectas' });
-        }
-
-        const token = jwt.sign(
-            { userId: user._id },
-            process.env.JWT_SECRET || 'tu_clave_secreta',
-            { expiresIn: '24h' }
-        );
-
-        console.log('✅ Login exitoso -', user.name);
-
-        res.json({
-            token,
-            user: {
-                userId: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role || 'user',
-                active: user.active
+        // Convertir respuesta del controlador a HTTP response
+        if (result.status === 'success') {
+            res.json({
+                token: result.token,
+                user: result.user
+            });
+        } else {
+            // Manejar diferentes tipos de errores con códigos HTTP apropiados
+            if (result.errorType === 'USER_INACTIVE') {
+                return res.status(403).json({ message: result.message });
+            } else if (result.errorType === 'USER_NOT_FOUND' || result.errorType === 'INVALID_PASSWORD') {
+                return res.status(401).json({ message: result.message });
+            } else {
+                return res.status(500).json({ message: result.message });
             }
-        });
+        }
     } catch (error) {
         console.error('❌ Error en login:', error);
         res.status(500).json({ message: 'Error en el servidor' });
