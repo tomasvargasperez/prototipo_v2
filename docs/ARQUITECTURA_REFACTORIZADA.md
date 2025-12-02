@@ -440,3 +440,6 @@ Esta estructura hace el código más:
 
 **Última actualización**: Después de la refactorización del login (unificación de UserController y UserRoutes)
 
+
+
+

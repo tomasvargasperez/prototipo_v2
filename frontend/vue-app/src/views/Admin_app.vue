@@ -644,6 +644,7 @@ export default {
       connectionsChart: null,
       suggestionFilter: 'all',
       filteredSuggestions: [],
+      suggestions: [],
       dashboardData: null,
       directorySearch: '',
       directoryContacts: [],
@@ -1277,20 +1278,13 @@ export default {
 
         const data = await response.json();
         console.log('Sugerencias recibidas:', data);
-        
-        // Asegurarse de que data sea un array
-        this.filteredSuggestions = Array.isArray(data) ? data : [];
-        
-        // Aplicar el filtro actual si existe
-        if (this.suggestionFilter !== 'all') {
-          this.filteredSuggestions = this.filteredSuggestions.filter(
-            s => s.status === this.suggestionFilter
-          );
-        }
-        
-        console.log('Sugerencias filtradas:', this.filteredSuggestions);
+
+        // Guardar todas las sugerencias y aplicar el filtro actual
+        this.suggestions = Array.isArray(data) ? data : [];
+        this.applySuggestionFilter();
       } catch (error) {
         console.error('Error en fetchSuggestions:', error);
+        this.suggestions = [];
         this.filteredSuggestions = [];
       }
     },
@@ -1369,6 +1363,16 @@ export default {
         contact.extension.toString().includes(searchTerm)
       );
     },
+    applySuggestionFilter() {
+      if (this.suggestionFilter === 'all') {
+        this.filteredSuggestions = [...this.suggestions];
+        return;
+      }
+
+      this.filteredSuggestions = this.suggestions.filter(
+        suggestion => suggestion.status === this.suggestionFilter
+      );
+    }
   },
   watch: {
     activeSection: {
@@ -1389,6 +1393,9 @@ export default {
         // Cargar datos de la nueva sección
         this.loadSectionData(newSection);
       }
+    },
+    suggestionFilter() {
+      this.applySuggestionFilter();
     },
     'channelForm.isPublic'(newValue) {
       // Si el canal se vuelve privado, asegurarse de que los usuarios estén cargados
